@@ -1,22 +1,46 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Web Summarizer API")
+app = FastAPI()
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Em produção, restringir
+    allow_credentials=True,
+    allow_methods=["*"],  # IMPORTANTE
+    allow_headers=["*"],  # IMPORTANTE
+)
 
 class TextRequest(BaseModel):
     text: str
 
 @app.get("/")
-def read_root():
-    return{"message": "API do Web Summarizer está rodando 🚀"}
+def root():
+    return {"message": "API do Web Summarizer está rodando 🚀"}
 
 @app.post("/summarize")
 def summarize(request: TextRequest):
     text = request.text
 
-    # Resumo fake (por enquanto)
-    summary = text[:100] + "..." if len(text) > 100 else text
+    summary = text[:200]
 
-    return{
-        "summary": summary
+    bullets = [
+        sentence.strip()
+        for sentence in text.split(".")[:3]
+        if sentence.strip()
+    ]
+
+    actions = [
+        "Revisar o conteudo resumido",
+        "Compartilhar com a equipe",
+        "Definir próximos passos"
+    ]
+
+    return {
+        "summary": summary,
+        "bullets": bullets,
+        "actions": actions
     }
+        
