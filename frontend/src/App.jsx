@@ -69,14 +69,16 @@ function App() {
 
       <br />
       <br />
+      
+      <div className="actions">
+        <button onClick={handleSummarize} disabled={loading}>
+          {loading ? "Resumindo..." : "Resumir"}
+        </button>
 
-      <button onClick={handleSummarize} disabled={loading}>
-        {loading ? "Resumindo..." : "Resumir"}
-      </button>
-
-      <button onClick={handleUpload} disabled={loading}>
-        {loading ? "Processando..." : "Enviar Arquivo"}
-      </button>
+        <button onClick={handleUpload} disabled={loading}>
+          {loading ? "Processando..." : "Enviar Arquivo"}
+        </button>
+      </div>
 
       <input
         type="file"
