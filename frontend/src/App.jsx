@@ -1,3 +1,5 @@
+// teste git
+
 import "./App.css";
 import { useState } from "react";
 
@@ -52,28 +54,28 @@ function App() {
   return (
     <div style={{ padding: "40px", fontFamily: "Arial" }}>
       <div className="container">
-          <h1>Web Summarizer</h1>
+        <h1>Web Summarizer</h1>
 
-          <textarea
-            placeholder="Cole seu texto aqui..."
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            style={{ width: "100%", height: "200px" }}
-            />
+        <textarea
+          placeholder="Cole seu texto aqui..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          style={{ width: "100%", height: "200px" }}
+        />
 
-          <br />
-          <br />
+        <br />
+        <br />
 
-          <div className="actions">
-            <button onClick={handleSummarize} disabled={loading}>
-              {loading ? "Resumindo..." : "Resumir"}
-            </button>
+        <div className="actions">
+          <button onClick={handleSummarize} disabled={loading}>
+            {loading ? "Resumindo..." : "Resumir"}
+          </button>
 
-            <button onClick={handleUpload} disabled={loading}>
-              {loading ? "Processando..." : "Envir Arquivo"}
-            </button>
-          </div>
+          <button onClick={handleUpload} disabled={loading}>
+            {loading ? "Processando..." : "Envir Arquivo"}
+          </button>
         </div>
+      </div>
 
       <input
         type="file"
