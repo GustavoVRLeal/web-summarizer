@@ -4,6 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import UploadFile, File
 from PyPDF2 import PdfReader
 import PyPDF2
+from database import engine
+from models import Base
+
+Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI()
