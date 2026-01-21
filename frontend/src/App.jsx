@@ -9,6 +9,7 @@ function App() {
   const [actions, setActions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
+  const [history, setHistory] = useState<any[]>([]);
 
   const handleSummarize = async () => {
     setLoading(true);
