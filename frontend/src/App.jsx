@@ -1,6 +1,6 @@
 import "./App.css";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function App() {
   const [text, setText] = useState("");
@@ -16,6 +16,10 @@ function App() {
     const data = await response.json();
     setHistory(data);
   };
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
 
   const handleSummarize = async () => {
     setLoading(true);
