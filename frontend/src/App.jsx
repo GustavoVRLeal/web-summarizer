@@ -164,10 +164,9 @@ function App() {
           style={{ padding: "8px", width: "250px", marginRight: "10px" }}
         />
 
-        <button onClick={handleSearch}>Buscar</button>
+      <button onClick={handleSearch}>Buscar</button>
       </div>
-
-            
+      
       <hr />
 
       <h2>Histórico de resumos</h2>
