@@ -68,23 +68,24 @@ async def upload_file(file: UploadFile = File(...)):
         "text": text
     }
 
-    # Reaproveitando a lógica de resumo
-    summary = content[:200]
+def process_text(text: str):
+    sentences = text.split(".")
+
+    summary = ". ".join(sentences[:3]).strip()
 
     bullets = [
-        sentence.strip()
-        for sentence in content.split(".")[:3]
+        sentences.strip()
+        for sentence in sentences[:5]
         if sentence.strip()
     ]
 
     actions = [
-        "Revisar o resumo gerado",
-        "Validar informações importantes",
-        "Definir ações com base no relatório"
+        f"Ação: {sentences.strip()}"
+        for sentence in sentences[:3]
+        if sentence.strip()
     ]
 
     return {
-        "filename": file.filename,
         "summary": summary,
         "bullets": bullets,
         "actions": actions
