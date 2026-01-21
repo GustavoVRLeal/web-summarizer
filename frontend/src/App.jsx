@@ -31,6 +31,29 @@ function App() {
     fetchHistory();
   }, []);
 
+  const handleSearch = async () => {
+    if (!search.trim()){
+      fetchHistory();
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/search?q=${encodeURIComponent(search)}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Erro ao buscar histórico");
+      }
+
+      const data = await response.json();
+      setHistory(data);
+    } catch (error) {
+      console.error("Erro na busca:", error);
+    }
+
+  }
+
   const handleSummarize = async () => {
     setLoading(true);
 
@@ -131,6 +154,19 @@ function App() {
           </ul>
         </div>
       )}
+
+      <div style={{ marginBottom: "20px" }}>
+        <input
+          type="text"
+          placeholder="Buscar no histórico..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ padding: "8px", width: "250px", marginRight: "10px" }}
+        />
+
+        <button onClick={handleSearch}>Buscar</button>
+      </div>
+
             
       <hr />
 
