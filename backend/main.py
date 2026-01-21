@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import UploadFile, File
+from PyPDF2 import PdfReader
 import PyPDF2
 
 
@@ -48,18 +49,24 @@ def summarize(request: TextRequest):
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
-    content = ""
 
     if file.filename.endswith(".txt"):
-        content = (await file.read()).decode("utf-8")
+        content = await file.read()
+        text = content.decode("utf-8")
 
     elif file.filename.endswith(".pdf"):
-        reader = PyPDF2.PdfReader(file.file)
+        reader = PdfReader(file.file)
+        text = ""
         for page in reader.pages:
-            content += page.extract_text() or ""
+            text += page.extract_text()
 
     else:
         return {"error": "Formato de arquivo não suportado"}
+    
+    return {
+        "filename": file.filename,
+        "text": text
+    }
 
     # Reaproveitando a lógica de resumo
     summary = content[:200]
