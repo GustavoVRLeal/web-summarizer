@@ -1,14 +1,25 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import UploadFile, File
+from fastapi import Depends
+from pydantic import BaseModel
 from PyPDF2 import PdfReader
 import PyPDF2
 from database import engine
 from models import Base
+from sqlalchemy.orm import Session
+from database import SessionLocal
+from models import Summary
+import json
 
 Base.metadata.create_all(bind=engine)
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 app = FastAPI()
 
@@ -28,8 +39,20 @@ def root():
     return {"message": "API do Web Summarizer está rodando 🚀"}
 
 @app.post("/summarize")
-async def summarize(input: TextInput):
+async def summarize(input: TextInput, db: Session = Depends(get_db)):
     result = process_text(input.text)
+
+    summary_db = Summary(
+        original_text=input.text,
+        summary=result["summary"],
+        bullets=json.dumps(result["bullets"]),
+        actions=json.dumps(result["actions"])
+    )
+
+    db.add(summary_db)
+    db.commit()
+    db.refresh(summary_db)
+
     return result
 
 @app.post("/upload")
