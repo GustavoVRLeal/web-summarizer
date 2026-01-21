@@ -76,6 +76,19 @@ async def upload_file(file: UploadFile = File(...)):
         "text": text
     }
 
+@app.get("/history")
+def get_history(db: Session = Depends(get_db)):
+    summaries = db.query(Summary).order_by(Summary.created_at.desc()).all()
+
+    return [
+        {
+            "id": s.id,
+            "summary": s.summary,
+            "created_at": s.created_at
+        }
+        for s in summaries
+    ]
+
 def process_text(text: str):
     sentences = text.split(".")
 
