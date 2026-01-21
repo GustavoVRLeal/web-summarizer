@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class TextRequest(BaseModel):
+class TextInput(BaseModel):
     text: str
 
 @app.get("/")
@@ -24,28 +24,9 @@ def root():
     return {"message": "API do Web Summarizer está rodando 🚀"}
 
 @app.post("/summarize")
-def summarize(request: TextRequest):
-    text = request.text
-
-    summary = text[:200]
-
-    bullets = [
-        sentence.strip()
-        for sentence in text.split(".")[:3]
-        if sentence.strip()
-    ]
-
-    actions = [
-        "Revisar o conteúdo resumido",
-        "Compartilhar com a equipe",
-        "Definir próximos passos"
-    ]
-
-    return {
-        "summary": summary,
-        "bullets": bullets,
-        "actions": actions
-    }
+async def summarize(input: TextInput):
+    result = process_text(input.text)
+    return result
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
