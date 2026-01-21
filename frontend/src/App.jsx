@@ -5,30 +5,30 @@ import { useState } from "react";
 function App() {
   const [text, setText] = useState("");
   const [summary, setSummary] = useState("");
+  const [bullets, setBullets] = useState([]);
+  const [actions, setActions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
 
-  async function handleSummarize() {
+  const handleSummarize = async () => {
     setLoading(true);
 
-    try {
-      const response = await fetch("http://127.0.0.1:8000/summarize", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text }),
-      });
+    const response = await fetch("http://127.0.0.1:8000/summarize", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text }),
+    });
 
-      const data = await response.json();
-      setSummary(data.summary);
-    } catch (error) {
-      console.error("Erro ao resumir:", error);
-      alert("Erro ao resumir texto");
-    } finally {
-      setLoading(false);
-    }
-  }
+    const data = await response.json();
+
+    setSummary(data.summary);
+    setBullets(data.bullets);
+    setActions(data.actions);
+
+    setLoading(false);
+  };
 
   const handleUpload = async () => {
     if (!file) return;
@@ -43,7 +43,7 @@ function App() {
 
     const data = await response.json();
     setText(data.text);
-  }
+  };
 
   return (
     <div style={{ padding: "40px", fontFamily: "Arial" }}>
@@ -77,11 +77,36 @@ function App() {
         onChange={(e) => setFile(e.target.files[0])}
       />
 
+      {/* RESUMO */}
       {summary && (
-        <>
+        <div>
           <h2>Resumo</h2>
           <p>{summary}</p>
-        </>
+        </div>
+      )}
+
+      {/* BULLETS */}
+      {bullets.length > 0 && (
+        <div>
+          <h2>Pontos principais</h2>
+          <ul>
+            {bullets.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* ACTION ITEMS */}
+      {actions.length > 0 && (
+        <div>
+          <h2>Ações sugeridas</h2>
+          <ul>
+            {actions.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );
