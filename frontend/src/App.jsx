@@ -9,12 +9,21 @@ function App() {
   const [actions, setActions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState([]);
 
   const fetchHistory = async () => {
+    try {
     const response = await fetch("http://127.0.0.1:8000/history");
-    const data = await response.json();
-    setHistory(data);
+
+    if (!response.ok) {
+      throw new Error("Erro ao buscar histórico");
+    }
+
+      const data = await response.json();
+      setHistory(data);
+    } catch (error) {
+      console.error("Erro no fetchHistory:", error);
+    }
   };
 
   useEffect(() => {
@@ -121,6 +130,29 @@ function App() {
           </ul>
         </div>
       )}
+            
+      <hr />
+
+      <h2>Histórico de resumos</h2>
+
+      {history.length === 0 && <p>Nenhum resumo ainda.</p>}
+
+      {history.map((item) => (
+        <div
+          key={item.id}
+          style={{
+            border: "1px solid #ccc",
+            padding: "10px",
+            marginBottom: "10px",
+            borderRadius: "6px",
+          }}
+        >
+          <p><strong>Resumo:</strong> {item.summary}</p>
+          <small>
+            Criado em: {new Date(item.created_at).toLocaleString()}
+          </small>
+        </div>
+      ))}
     </div>
   );
 }
