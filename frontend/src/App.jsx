@@ -38,6 +38,8 @@ function App() {
     setBullets(data.bullets);
     setActions(data.actions);
 
+    await fetchHistory();
+
     setLoading(false);
   };
 
