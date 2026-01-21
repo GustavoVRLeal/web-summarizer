@@ -89,6 +89,21 @@ def get_history(db: Session = Depends(get_db)):
         for s in summaries
     ]
 
+@app.get("/search")
+def search_history(q: str, db: Session = Depends(get_db)):
+    results = db.query(Summary).filter(
+        Summary.original_text.contains(q)
+    ).all()
+
+    return [
+        {
+            "id": s.id,
+            "summary": s.summary,
+            "created_at": s.created_at
+        }
+        for s in results
+    ]
+
 def process_text(text: str):
     sentences = text.split(".")
 
