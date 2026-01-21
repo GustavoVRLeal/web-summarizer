@@ -55,13 +55,13 @@ def process_text(text: str):
     summary = ". ".join(sentences[:3]).strip()
 
     bullets = [
-        sentences.strip()
+        sentence.strip()
         for sentence in sentences[:5]
         if sentence.strip()
     ]
 
     actions = [
-        f"Ação: {sentences.strip()}"
+        f"Ação: {sentence.strip()}"
         for sentence in sentences[:3]
         if sentence.strip()
     ]
