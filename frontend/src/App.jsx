@@ -10,6 +10,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
   const [history, setHistory] = useState([]);
+  const [search, setSearch] = useState("");
 
   const fetchHistory = async () => {
     try {
