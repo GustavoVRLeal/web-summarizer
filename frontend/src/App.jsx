@@ -11,6 +11,12 @@ function App() {
   const [file, setFile] = useState(null);
   const [history, setHistory] = useState<any[]>([]);
 
+  const fetchHistory = async () => {
+    const response = await fetch("http://127.0.0.1:8000/history");
+    const data = await response.json();
+    setHistory(data);
+  };
+
   const handleSummarize = async () => {
     setLoading(true);
 
