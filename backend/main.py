@@ -27,7 +27,7 @@ app = FastAPI()
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://web-summarizer-omega.vercel.app/"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -41,7 +41,7 @@ def root():
 
 @app.post("/summarize")
 async def summarize(input: TextInput, db: Session = Depends(get_db)):
-    
+
     try:
         result = llm_summarize(input.text)
     except Exception as e:
