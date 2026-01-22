@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from database import SessionLocal
 from models import Summary
 import json
+from llm import llm_summarize
 
 Base.metadata.create_all(bind=engine)
 
@@ -40,7 +41,7 @@ def root():
 
 @app.post("/summarize")
 async def summarize(input: TextInput, db: Session = Depends(get_db)):
-    result = process_text(input.text)
+    result = llm_summarize(input.text)
 
     summary_db = Summary(
         original_text=input.text,
