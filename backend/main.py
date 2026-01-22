@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import UploadFile, File
 from fastapi import Depends
@@ -41,7 +41,11 @@ def root():
 
 @app.post("/summarize")
 async def summarize(input: TextInput, db: Session = Depends(get_db)):
-    result = llm_summarize(input.text)
+    
+    try:
+        result = llm_summarize(input.text)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
     summary_db = Summary(
         original_text=input.text,
