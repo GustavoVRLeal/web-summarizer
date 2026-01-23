@@ -98,6 +98,32 @@ def get_history(db: Session = Depends(get_db)):
         for s in summaries
     ]
 
+@app.get("/history/{summary_id}")
+def get_history_item(summary_id: int, db: Session = Depends(get_db)):
+    summary = db.query(Summary).filter(Summary.id == summary_id).first()
+
+    if not summary:
+        raise HTTPException(status_code=404, detail="Resumo nÃ£o encontrado")
+
+    try:
+        bullets = json.loads(summary.bullets) if summary.bullets else []
+    except json.JSONDecodeError:
+        bullets = []
+
+    try:
+        actions = json.loads(summary.actions) if summary.actions else []
+    except json.JSONDecodeError:
+        actions = []
+
+    return {
+        "id": summary.id,
+        "original_text": summary.original_text,
+        "summary": summary.summary,
+        "bullets": bullets,
+        "actions": actions,
+        "created_at": summary.created_at,
+    }
+
 @app.get("/search")
 def search_history(q: str, db: Session = Depends(get_db)):
     results = db.query(Summary).filter(

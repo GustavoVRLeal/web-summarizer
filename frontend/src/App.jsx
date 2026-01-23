@@ -15,22 +15,25 @@ function App() {
   const [bullets, setBullets] = useState([]);
   const [actions, setActions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [file, setFile] = useState(null);
   const [history, setHistory] = useState([]);
   const [search, setSearch] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
+  const [originalText, setOriginalText] = useState("");
 
   const fetchHistory = async () => {
     try {
       const response = await fetch(`${API_URL}/history`);
 
       if (!response.ok) {
-        throw new Error("Erro ao buscar histórico");
+        throw new Error("Error fetching history");
       }
 
       const data = await response.json();
       setHistory(data);
     } catch (error) {
-      console.error("Erro no fetchHistory:", error);
+      console.error("Error in fetchHistory:", error);
     }
   };
 
@@ -50,13 +53,13 @@ function App() {
       );
 
       if (!response.ok) {
-        throw new Error("Erro ao buscar histórico");
+        throw new Error("Error fetching history");
       }
 
       const data = await response.json();
       setHistory(data);
     } catch (error) {
-      console.error("Erro no handleSearch:", error);
+      console.error("Error in handleSearch:", error);
     }
   };
 
@@ -81,13 +84,45 @@ function App() {
       setSummary(data.summary || "");
       setBullets(Array.isArray(data.bullets) ? data.bullets : []);
       setActions(Array.isArray(data.actions) ? data.actions : []);
+      setOriginalText("");
+      setSelectedId(null);
 
       await fetchHistory();
     } catch (error) {
-      console.error("Erro ao resumir:", error);
-      alert("Erro ao resumir. Verifique se o backend está online e tente novamente.");
+      console.error("Error summarizing:", error);
+      alert("Error summarizing. Check if the backend is online and try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleHistorySelect = async (id) => {
+    if (selectedId === id) {
+      setSelectedId(null);
+      setOriginalText("");
+      return;
+    }
+
+    setDetailLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/history/${id}`);
+
+      if (!response.ok) {
+        throw new Error("Error fetching summary");
+      }
+
+      const data = await response.json();
+
+      setSummary(data.summary || "");
+      setBullets(Array.isArray(data.bullets) ? data.bullets : []);
+      setActions(Array.isArray(data.actions) ? data.actions : []);
+      setOriginalText(data.original_text || "");
+      setSelectedId(id);
+    } catch (error) {
+      console.error("Error opening summary:", error);
+      alert("Error opening history summary.");
+    } finally {
+      setDetailLoading(false);
     }
   };
 
@@ -106,18 +141,19 @@ function App() {
 
       if (!response.ok) {
         const err = await response.text();
-        throw new Error(err || "Erro ao enviar arquivo");
+        throw new Error(err || "Error uploading file");
       }
 
       const data = await response.json();
       setText(data.text || "");
     } catch (e) {
       console.error(e);
-      alert("Não foi possível ler o arquivo. Tente outro PDF/TXT.");
+      alert("Could not read the file. Try another PDF/TXT.");
     }
   };
 
-  const hasResults = summary || bullets.length > 0 || actions.length > 0;
+  const hasResults =
+    summary || bullets.length > 0 || actions.length > 0 || originalText;
 
   return (
     <div className="app">
@@ -125,27 +161,27 @@ function App() {
         <header className="header">
           <h1 className="title">Web Summarizer</h1>
           <p className="subtitle">
-            Cole um texto ou envie um PDF/TXT para gerar resumo, pontos principais e ações.
+            Paste text or upload a PDF/TXT to generate a summary, key points, and actions.
           </p>
         </header>
 
-        {/* Entrada */}
+        {/* Input */}
         <section className="card">
-          <label className="label">Texto</label>
+          <label className="label">Text</label>
           <textarea
             className="textarea"
-            placeholder="Cole seu texto aqui..."
+            placeholder="Paste your text here..."
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
 
           <div className="actionsRow">
             <button className="btn btnPrimary" onClick={handleSummarize} disabled={loading || !text.trim()}>
-              {loading ? "Resumindo..." : "Resumir"}
+              {loading ? "Summarizing..." : "Summarize"}
             </button>
 
             <button className="btn btnSecondary" onClick={handleUpload} disabled={loading || !file}>
-              {loading ? "Processando..." : "Importar arquivo"}
+              {loading ? "Processing..." : "Import file"}
             </button>
           </div>
 
@@ -157,24 +193,31 @@ function App() {
               onChange={(e) => setFile(e.target.files?.[0] || null)}
             />
             <span className="fileName">
-              {file ? file.name : "Nenhum arquivo selecionado"}
+              {file ? file.name : "No file selected"}
             </span>
           </div>
         </section>
 
-        {/* Saída */}
+        {/* Output */}
         {hasResults && (
           <section className="resultsGrid">
+            {originalText && (
+              <div className="card">
+                <h2 className="cardTitle">Original text</h2>
+                <p className="text pre">{originalText}</p>
+              </div>
+            )}
+
             {summary && (
               <div className="card">
-                <h2 className="cardTitle">Resumo</h2>
+                <h2 className="cardTitle">Summary</h2>
                 <p className="text">{summary}</p>
               </div>
             )}
 
             {bullets.length > 0 && (
               <div className="card">
-                <h2 className="cardTitle">Pontos principais</h2>
+                <h2 className="cardTitle">Key points</h2>
                 <ul className="list">
                   {bullets.map((item, index) => (
                     <li key={index}>{item}</li>
@@ -185,7 +228,7 @@ function App() {
 
             {actions.length > 0 && (
               <div className="card">
-                <h2 className="cardTitle">Ações sugeridas</h2>
+                <h2 className="cardTitle">Suggested actions</h2>
                 <ul className="list">
                   {actions.map((item, index) => (
                     <li key={index}>{item}</li>
@@ -196,45 +239,54 @@ function App() {
           </section>
         )}
 
-        {/* Histórico */}
+        {/* History */}
         <section className="card">
           <div className="historyHeader">
-            <h2 className="cardTitle">Histórico</h2>
+            <h2 className="cardTitle">History</h2>
 
             <div className="searchRow">
               <input
                 className="searchInput"
                 type="text"
-                placeholder="Buscar no histórico..."
+                placeholder="Search history..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
               <button className="btn btnGhost" onClick={handleSearch}>
-                Buscar
+                Search
               </button>
             </div>
           </div>
 
           {history.length === 0 ? (
-            <p className="muted">Nenhum resumo ainda.</p>
+            <p className="muted">No summaries yet.</p>
           ) : (
             <div className="historyGrid">
               {history.map((item) => (
-                <div className="historyCard" key={item.id}>
+                <button
+                  className={`historyCard ${selectedId === item.id ? "historyCardActive" : ""}`}
+                  key={item.id}
+                  onClick={() => handleHistorySelect(item.id)}
+                  type="button"
+                >
                   <p className="historyText">
-                    <strong>Resumo:</strong> {item.summary}
+                    <strong>Summary:</strong> {item.summary}
                   </p>
                   <small className="muted">
                     Criado em: {new Date(item.created_at).toLocaleString()}
                   </small>
-                </div>
+                </button>
               ))}
             </div>
           )}
         </section>
 
         <footer className="footer">
-          <span className="muted">Dica: gere alguns resumos para alimentar o histórico.</span>
+          <span className="muted">
+            {detailLoading
+              ? "Loading history summary..."
+              : "Tip: generate a few summaries to populate the history."}
+          </span>
         </footer>
       </div>
     </div>
