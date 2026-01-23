@@ -2,6 +2,13 @@ import "./App.css";
 
 import { useEffect, useState } from "react";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://web-summarizer-3gkx.onrender.com";
+
+
+console.log("API_URL:", API_URL);
+
+
 function App() {
   const [text, setText] = useState("");
   const [summary, setSummary] = useState("");
@@ -14,7 +21,7 @@ function App() {
 
   const fetchHistory = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/history");
+      const response = await fetch(`${API_URL}/history`);
 
       if (!response.ok) {
         throw new Error("Erro ao buscar histórico");
@@ -39,7 +46,7 @@ function App() {
       }
 
       const response = await fetch(
-        `http://127.0.0.1:8000/search?q=${encodeURIComponent(search)}`,
+       `${API_URL}/search?q=${encodeURIComponent(search)}`
       );
 
       if (!response.ok) {
@@ -54,26 +61,36 @@ function App() {
   };
 
   const handleSummarize = async () => {
+    if (!text.trim()) return;
+
     setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/summarize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
 
-    const response = await fetch("http://127.0.0.1:8000/summarize", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text }),
-    });
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || `Erro HTTP ${response.status}`);
+      }
 
-    const data = await response.json();
+      const data = await response.json();
 
-    setSummary(data.summary);
-    setBullets(data.bullets);
-    setActions(data.actions);
+      setSummary(data.summary || "");
+      setBullets(Array.isArray(data.bullets) ? data.bullets : []);
+      setActions(Array.isArray(data.actions) ? data.actions : []);
 
-    await fetchHistory();
-
-    setLoading(false);
+      await fetchHistory();
+    } catch (error) {
+      console.error("Erro ao resumir:", error);
+      alert("Erro ao resumir. Verifique se o backend está online e tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   const handleUpload = async () => {
     if (!file) return;
@@ -82,7 +99,7 @@ function App() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("http://127.0.0.1:8000/upload", {
+      const response = await fetch(`${API_URL}/upload`, {
         method: "POST",
         body: formData,
       });
