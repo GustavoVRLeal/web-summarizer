@@ -8,8 +8,67 @@ const API_URL =
 
 console.log("API_URL:", API_URL);
 
+const BrazilFlagIcon = () => (
+  <svg className="flagIcon" viewBox="0 0 64 48" aria-hidden="true">
+    <defs>
+      <clipPath id="brFlagClip">
+        <rect width="64" height="48" rx="6" ry="6" />
+      </clipPath>
+      <clipPath id="brCircleClip">
+        <circle cx="32" cy="24" r="11" />
+      </clipPath>
+      <pattern id="brStars" width="4" height="4" patternUnits="userSpaceOnUse">
+        <circle cx="1" cy="1" r="0.45" fill="#ffffff" />
+      </pattern>
+    </defs>
+    <g clipPath="url(#brFlagClip)">
+      <rect width="64" height="48" fill="#009c3b" />
+      <polygon points="32,6 58,24 32,42 6,24" fill="#ffdf00" />
+      <g clipPath="url(#brCircleClip)">
+        <circle cx="32" cy="24" r="11" fill="#002776" />
+        <rect x="21" y="17" width="22" height="14" fill="url(#brStars)" opacity="0.85" />
+        <path
+          d="M20 22 C26 18 38 18 44 22"
+          fill="none"
+          stroke="#ffffff"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+        />
+      </g>
+    </g>
+    <rect width="64" height="48" rx="6" ry="6" fill="none" stroke="rgba(255,255,255,0.2)" />
+  </svg>
+);
+
+const UsaFlagIcon = () => (
+  <svg className="flagIcon" viewBox="0 0 64 48" aria-hidden="true">
+    <defs>
+      <clipPath id="usFlagClip">
+        <rect width="64" height="48" rx="6" ry="6" />
+      </clipPath>
+      <pattern id="usStripes" width="64" height="7.3846" patternUnits="userSpaceOnUse">
+        <rect width="64" height="3.6923" fill="#ff4b55" />
+        <rect y="3.6923" width="64" height="3.6923" fill="#ffffff" />
+      </pattern>
+      <pattern id="usStars" width="6" height="6" patternUnits="userSpaceOnUse">
+        <polygon
+          points="3,0.4 3.8,2.2 5.8,2.2 4.2,3.4 4.8,5.6 3,4.3 1.2,5.6 1.8,3.4 0.2,2.2 2.2,2.2"
+          fill="#ffffff"
+        />
+      </pattern>
+    </defs>
+    <g clipPath="url(#usFlagClip)">
+      <rect width="64" height="48" fill="url(#usStripes)" />
+      <rect width="28" height="22" fill="#3c3b6e" />
+      <rect width="28" height="22" fill="url(#usStars)" />
+    </g>
+    <rect width="64" height="48" rx="6" ry="6" fill="none" stroke="rgba(255,255,255,0.2)" />
+  </svg>
+);
+
 
 function App() {
+  const [language, setLanguage] = useState("pt");
   const [text, setText] = useState("");
   const [summary, setSummary] = useState("");
   const [bullets, setBullets] = useState([]);
@@ -21,6 +80,68 @@ function App() {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const [originalText, setOriginalText] = useState("");
+
+  const translations = {
+    pt: {
+      languageToggleLabel: "Idioma",
+      title: "Web Summarizer",
+      subtitle: "Cole o texto ou envie um PDF/TXT para gerar um resumo, pontos-chave e acoes.",
+      textLabel: "Texto",
+      textPlaceholder: "Cole seu texto aqui...",
+      summarize: "Resumir",
+      summarizing: "Resumindo...",
+      importFile: "Importar arquivo",
+      processing: "Processando...",
+      noFileSelected: "Nenhum arquivo selecionado",
+      originalText: "Texto original",
+      summary: "Resumo",
+      keyPoints: "Pontos-chave",
+      suggestedActions: "Acoes sugeridas",
+      history: "Historico",
+      searchPlaceholder: "Buscar no historico...",
+      search: "Buscar",
+      noSummaries: "Nenhum resumo ainda.",
+      createdAt: "Criado em",
+      loadingHistory: "Carregando resumo do historico...",
+      tip: "Dica: gere alguns resumos para preencher o historico.",
+      errorSummarize: "Erro ao resumir. Verifique se o backend esta online e tente novamente.",
+      errorHistory: "Erro ao abrir o resumo do historico.",
+      errorUpload: "Nao foi possivel ler o arquivo. Tente outro PDF/TXT.",
+    },
+    en: {
+      languageToggleLabel: "Language",
+      title: "Web Summarizer",
+      subtitle: "Paste text or upload a PDF/TXT to generate a summary, key points, and actions.",
+      textLabel: "Text",
+      textPlaceholder: "Paste your text here...",
+      summarize: "Summarize",
+      summarizing: "Summarizing...",
+      importFile: "Import file",
+      processing: "Processing...",
+      noFileSelected: "No file selected",
+      originalText: "Original text",
+      summary: "Summary",
+      keyPoints: "Key points",
+      suggestedActions: "Suggested actions",
+      history: "History",
+      searchPlaceholder: "Search history...",
+      search: "Search",
+      noSummaries: "No summaries yet.",
+      createdAt: "Created at",
+      loadingHistory: "Loading history summary...",
+      tip: "Tip: generate a few summaries to populate the history.",
+      errorSummarize: "Error summarizing. Check if the backend is online and try again.",
+      errorHistory: "Error opening history summary.",
+      errorUpload: "Could not read the file. Try another PDF/TXT.",
+    },
+  };
+
+  const localeByLanguage = {
+    pt: "pt-BR",
+    en: "en-US",
+  };
+
+  const t = translations[language];
 
   const fetchHistory = async () => {
     try {
@@ -90,7 +211,7 @@ function App() {
       await fetchHistory();
     } catch (error) {
       console.error("Error summarizing:", error);
-      alert("Error summarizing. Check if the backend is online and try again.");
+      alert(t.errorSummarize);
     } finally {
       setLoading(false);
     }
@@ -120,7 +241,7 @@ function App() {
       setSelectedId(id);
     } catch (error) {
       console.error("Error opening summary:", error);
-      alert("Error opening history summary.");
+      alert(t.errorHistory);
     } finally {
       setDetailLoading(false);
     }
@@ -148,7 +269,7 @@ function App() {
       setText(data.text || "");
     } catch (e) {
       console.error(e);
-      alert("Could not read the file. Try another PDF/TXT.");
+      alert(t.errorUpload);
     }
   };
 
@@ -159,29 +280,49 @@ function App() {
     <div className="app">
       <div className="container">
         <header className="header">
-          <h1 className="title">Web Summarizer</h1>
-          <p className="subtitle">
-            Paste text or upload a PDF/TXT to generate a summary, key points, and actions.
-          </p>
+          <div className="languageToggle" role="group" aria-label={t.languageToggleLabel}>
+            <button
+              className={`flagButton ${language === "pt" ? "flagButtonActive" : ""}`}
+              type="button"
+              aria-label="Mudar para Portugues"
+              title="Portuguese"
+              aria-pressed={language === "pt"}
+              onClick={() => setLanguage("pt")}
+            >
+              <BrazilFlagIcon />
+            </button>
+            <button
+              className={`flagButton ${language === "en" ? "flagButtonActive" : ""}`}
+              type="button"
+              aria-label="Switch to English"
+              title="English"
+              aria-pressed={language === "en"}
+              onClick={() => setLanguage("en")}
+            >
+              <UsaFlagIcon />
+            </button>
+          </div>
+          <h1 className="title">{t.title}</h1>
+          <p className="subtitle">{t.subtitle}</p>
         </header>
 
         {/* Input */}
         <section className="card">
-          <label className="label">Text</label>
+          <label className="label">{t.textLabel}</label>
           <textarea
             className="textarea"
-            placeholder="Paste your text here..."
+            placeholder={t.textPlaceholder}
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
 
           <div className="actionsRow">
             <button className="btn btnPrimary" onClick={handleSummarize} disabled={loading || !text.trim()}>
-              {loading ? "Summarizing..." : "Summarize"}
+              {loading ? t.summarizing : t.summarize}
             </button>
 
             <button className="btn btnSecondary" onClick={handleUpload} disabled={loading || !file}>
-              {loading ? "Processing..." : "Import file"}
+              {loading ? t.processing : t.importFile}
             </button>
           </div>
 
@@ -193,7 +334,7 @@ function App() {
               onChange={(e) => setFile(e.target.files?.[0] || null)}
             />
             <span className="fileName">
-              {file ? file.name : "No file selected"}
+              {file ? file.name : t.noFileSelected}
             </span>
           </div>
         </section>
@@ -203,21 +344,21 @@ function App() {
           <section className="resultsGrid">
             {originalText && (
               <div className="card">
-                <h2 className="cardTitle">Original text</h2>
+                <h2 className="cardTitle">{t.originalText}</h2>
                 <p className="text pre">{originalText}</p>
               </div>
             )}
 
             {summary && (
               <div className="card">
-                <h2 className="cardTitle">Summary</h2>
+                <h2 className="cardTitle">{t.summary}</h2>
                 <p className="text">{summary}</p>
               </div>
             )}
 
             {bullets.length > 0 && (
               <div className="card">
-                <h2 className="cardTitle">Key points</h2>
+                <h2 className="cardTitle">{t.keyPoints}</h2>
                 <ul className="list">
                   {bullets.map((item, index) => (
                     <li key={index}>{item}</li>
@@ -228,7 +369,7 @@ function App() {
 
             {actions.length > 0 && (
               <div className="card">
-                <h2 className="cardTitle">Suggested actions</h2>
+                <h2 className="cardTitle">{t.suggestedActions}</h2>
                 <ul className="list">
                   {actions.map((item, index) => (
                     <li key={index}>{item}</li>
@@ -242,24 +383,24 @@ function App() {
         {/* History */}
         <section className="card">
           <div className="historyHeader">
-            <h2 className="cardTitle">History</h2>
+            <h2 className="cardTitle">{t.history}</h2>
 
             <div className="searchRow">
               <input
                 className="searchInput"
                 type="text"
-                placeholder="Search history..."
+                placeholder={t.searchPlaceholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
               <button className="btn btnGhost" onClick={handleSearch}>
-                Search
+                {t.search}
               </button>
             </div>
           </div>
 
           {history.length === 0 ? (
-            <p className="muted">No summaries yet.</p>
+            <p className="muted">{t.noSummaries}</p>
           ) : (
             <div className="historyGrid">
               {history.map((item) => (
@@ -270,10 +411,10 @@ function App() {
                   type="button"
                 >
                   <p className="historyText">
-                    <strong>Summary:</strong> {item.summary}
+                    <strong>{t.summary}:</strong> {item.summary}
                   </p>
                   <small className="muted">
-                    Criado em: {new Date(item.created_at).toLocaleString()}
+                    {t.createdAt}: {new Date(item.created_at).toLocaleString(localeByLanguage[language])}
                   </small>
                 </button>
               ))}
@@ -283,9 +424,7 @@ function App() {
 
         <footer className="footer">
           <span className="muted">
-            {detailLoading
-              ? "Loading history summary..."
-              : "Tip: generate a few summaries to populate the history."}
+            {detailLoading ? t.loadingHistory : t.tip}
           </span>
         </footer>
       </div>
