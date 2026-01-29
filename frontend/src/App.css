@@ -301,6 +301,20 @@ body {
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
 }
 
+.pagination {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.paginationInfo {
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .historyText {
   margin: 0 0 8px;
   text-align: left;

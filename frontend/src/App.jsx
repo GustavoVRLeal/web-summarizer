@@ -80,6 +80,8 @@ function App() {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const [originalText, setOriginalText] = useState("");
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
 
   const translations = {
     pt: {
@@ -98,6 +100,10 @@ function App() {
       keyPoints: "Pontos-chave",
       suggestedActions: "Acoes sugeridas",
       history: "Historico",
+      paginationPrev: "Anterior",
+      paginationNext: "Proxima",
+      pageLabel: "Pagina",
+      ofLabel: "de",
       searchPlaceholder: "Buscar no historico...",
       search: "Buscar",
       noSummaries: "Nenhum resumo ainda.",
@@ -124,6 +130,10 @@ function App() {
       keyPoints: "Key points",
       suggestedActions: "Suggested actions",
       history: "History",
+      paginationPrev: "Previous",
+      paginationNext: "Next",
+      pageLabel: "Page",
+      ofLabel: "of",
       searchPlaceholder: "Search history...",
       search: "Search",
       noSummaries: "No summaries yet.",
@@ -161,6 +171,10 @@ function App() {
   useEffect(() => {
     fetchHistory();
   }, []);
+
+  useEffect(() => {
+    setPage(1);
+  }, [history.length]);
 
   const handleSearch = async () => {
     try {
@@ -275,6 +289,10 @@ function App() {
 
   const hasResults =
     summary || bullets.length > 0 || actions.length > 0 || originalText;
+  const totalPages = Math.max(1, Math.ceil(history.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const startIndex = (safePage - 1) * pageSize;
+  const pagedHistory = history.slice(startIndex, startIndex + pageSize);
 
   return (
     <div className="app">
@@ -402,8 +420,9 @@ function App() {
           {history.length === 0 ? (
             <p className="muted">{t.noSummaries}</p>
           ) : (
-            <div className="historyGrid">
-              {history.map((item) => (
+            <>
+              <div className="historyGrid">
+                {pagedHistory.map((item) => (
                 <button
                   className={`historyCard ${selectedId === item.id ? "historyCardActive" : ""}`}
                   key={item.id}
@@ -417,8 +436,32 @@ function App() {
                     {t.createdAt}: {new Date(item.created_at).toLocaleString(localeByLanguage[language])}
                   </small>
                 </button>
-              ))}
-            </div>
+                ))}
+              </div>
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button
+                    className="btn btnGhost"
+                    type="button"
+                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                    disabled={safePage === 1}
+                  >
+                    {t.paginationPrev}
+                  </button>
+                  <span className="paginationInfo">
+                    {t.pageLabel} {safePage} {t.ofLabel} {totalPages}
+                  </span>
+                  <button
+                    className="btn btnGhost"
+                    type="button"
+                    onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={safePage === totalPages}
+                  >
+                    {t.paginationNext}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
 
