@@ -1,9 +1,10 @@
 import os
 import json
+from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
 
-load_dotenv()
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 
 def _safe_list(value):
     if isinstance(value, list):
@@ -30,13 +31,17 @@ def llm_summarize(text: str) -> dict:
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY não encontrado. Configure no backend/.env")
-    
-    MAX_CHARS = 12000
+
     text_to_send = text.strip()
+    if not text_to_send:
+        return {"summary": "", "bullets": [], "actions": []}
+
+    MAX_CHARS = 12000
     if len(text_to_send) > MAX_CHARS:
         text_to_send = text_to_send[:MAX_CHARS]
-    
+
     client = OpenAI(api_key=api_key)
+    model = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
 
     prompt = f"""
 Retorne APENAS um JSON válido, sem markdown, sem texto extra.
@@ -53,14 +58,14 @@ Regras:
 - Se faltar informação, retorne listas menores, mas nunca null.
 
 Texto:
-{text}
+{text_to_send}
 """.strip()
 
-    
     # Respostas API
     resp = client.responses.create(
-        model="gpt-4.1-mini",
+        model=model,
         input=prompt,
+        response_format={"type": "json_object"},
     )
 
     output_text = resp.output_text.strip()

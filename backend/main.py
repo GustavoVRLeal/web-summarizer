@@ -49,7 +49,8 @@ async def summarize(input: TextInput, db: Session = Depends(get_db)):
     try:
         result = llm_summarize(input.text)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"LLM error: {e}")
+        result = process_text(input.text)
 
     summary_db = Summary(
         original_text=input.text,
@@ -151,7 +152,7 @@ def process_text(text: str):
     ]
 
     actions = [
-        f"Ação: {sentence.strip()}"
+        f"Acao: {sentence.strip()}"
         for sentence in sentences[:3]
         if sentence.strip()
     ]
@@ -161,3 +162,4 @@ def process_text(text: str):
         "bullets": bullets,
         "actions": actions
     }
+
